@@ -5,7 +5,6 @@ pipeline
         options 
         {
             buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '10', numToKeepStr: '10')
-            retry(2)
             timeout(10)
         }
 
@@ -61,7 +60,7 @@ pipeline
                         ssh $NODEJS_SERVER_USER@$NODEJS_SERVER_IP "
                         cd $REMOTE_PATH &&
                         npm install &&
-                        npx pm2 start app.js --name my-app --update-env || npx pm2 restart my-app
+                        pm2 start app.js --name my-app --update-env || pm2 restart my-app
                         "
                         '''
                     }
