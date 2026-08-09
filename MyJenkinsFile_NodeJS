@@ -1,0 +1,72 @@
+pipeline
+{
+    agent any
+
+        options 
+        {
+            buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '10', numToKeepStr: '10')
+            retry(2)
+            timeout(10)
+        }
+
+
+        triggers 
+        {
+            githubPush()
+        }
+
+        tools 
+        {
+            nodejs 'NodeJS 26.7.0'
+        }
+
+        environment 
+        {
+            NODEJS_SERVER_USER = "ec2-user"
+            NODEJS_SERVER_IP = "172.31.1.91"
+            REMOTE_PATH = "/home/ec2-user/nodejs-app"
+        }
+
+        stages 
+        {
+            stage('Install Dependencies')
+            {
+                steps
+                {
+                    sh 'npm install'
+                }
+            }
+
+            stage('copy files to Remote Server')
+            {
+                steps 
+                {
+                    sshagent(['NodeJS_Credentials'])
+                    {
+                        sh """
+                        ssh -o StrictHostKeyChecking=no  $NODEJS_SERVER_USER@$NODEJS_SERVER_IP "mkdir -p $REMOTE_PATH || true"
+                        rsync -avz --exclude=node_modules --exclude=.git ./ $NODEJS_SERVER_USER@$NODEJS_SERVER_IP:$REMOTE_PATH/
+                        """
+                    }
+                }
+            }
+
+            stage('Start Node.js Application') 
+            {
+                steps 
+                {
+                    sshagent(['NodeJS_Credentials']) 
+                    {
+                        sh '''
+                        ssh $NODEJS_SERVER_USER@$NODEJS_SERVER_IP "
+                        cd $REMOTE_PATH &&
+                        npm install &&
+                        npx pm2 start app.js --name my-app --update-env || npx pm2 restart my-app
+                        "
+                        '''
+                    }
+                }
+            }
+        }
+    
+}
