@@ -1,6 +1,5 @@
-@Library('Jenkins_Shared_Lib')
-pipeline
-{
+@Library('Jenkins_Shared_Lib') _
+pipeline {
     agent any
 
         options 
