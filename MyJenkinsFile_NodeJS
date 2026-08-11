@@ -71,8 +71,8 @@ pipeline {
         post
         {
             always {
-                SendEmailNotification(CurrentBuild.CurrentResult,"madhumidadevops@gmail.com")
-                SendSlackNotification("student-webapp-team", CurrentBuild.CurrentResult)
+                SendEmailNotification(currentBuild.currentResult,"madhumidadevops@gmail.com")
+                SendSlackNotification("student-webapp-team", currentBuild.currentResult)
             }
         }
     
